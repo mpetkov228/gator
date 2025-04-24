@@ -2,70 +2,70 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const configFileName = ".gatorconfig.json"
 
 type Config struct {
-	DbUrl           string `json:"db_url"`
+	DBURL           string `json:"db_url"`
 	CurrentUserName string `json:"current_user_name"`
 }
 
-func (c *Config) SetUser(user string) error {
-	c.CurrentUserName = user
-	err := write(*c)
+func (cfg *Config) SetUser(userName string) error {
+	cfg.CurrentUserName = userName
+	return write(*cfg)
+}
+
+func Read() (Config, error) {
+	filePath, err := getConfigFilePath()
 	if err != nil {
-		return err
+		return Config{}, err
 	}
-	return nil
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return Config{}, err
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	cfg := Config{}
+	err = decoder.Decode(&cfg)
+	if err != nil {
+		return Config{}, err
+	}
+
+	return cfg, nil
 }
 
 func getConfigFilePath() (string, error) {
-	homeDir, err := os.UserHomeDir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + configFileName, nil
+	fullPath := filepath.Join(home, configFileName)
+	return fullPath, nil
 }
 
 func write(cfg Config) error {
-	file, err := getConfigFilePath()
-	fmt.Println(file)
+	fullPath, err := getConfigFilePath()
 	if err != nil {
 		return err
 	}
 
-	data, err := json.Marshal(cfg)
+	file, err := os.Create(fullPath)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
-	err = os.WriteFile(file, data, 0666)
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(cfg)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func Read() Config {
-	filePath, err := getConfigFilePath()
-	if err != nil {
-		return Config{}
-	}
-
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return Config{}
-	}
-
-	cfg := Config{}
-	err = json.Unmarshal(data, &cfg)
-	if err != nil {
-		return Config{}
-	}
-
-	return cfg
 }
