@@ -1,9 +1,8 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"log"
+	"os"
 
 	"github.com/mpetkov228/gator/internal/config"
 )
@@ -12,38 +11,31 @@ type state struct {
 	cfg *config.Config
 }
 
-type command struct {
-	name string
-	args []string
-}
-
-func handleLogin(s *state, cmd command) error {
-	if len(cmd.args) == 0 {
-		return errors.New("no arguments provided")
-	}
-
-	username := cmd.args[0]
-	err := s.cfg.SetUser(username)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("user %v has been set\n", username)
-
-	return nil
-}
-
 func main() {
 	cfg, err := config.Read()
 	if err != nil {
 		log.Fatalf("error reading config: %v", err)
 	}
-	fmt.Printf("Read config: %+v\n", cfg)
 
-	cfg.SetUser("mihail")
-
-	cfg, err = config.Read()
-	if err != nil {
-		log.Fatalf("error reading config: %v", err)
+	programState := &state{
+		cfg: &cfg,
 	}
-	fmt.Printf("Read config again: %+v\n", cfg)
+
+	cmds := commands{
+		registeredCommands: make(map[string]func(*state, command) error),
+	}
+	cmds.register("login", handleLogin)
+
+	if len(os.Args) < 2 {
+		log.Fatal("Usage: cli <command> [args...]")
+		return
+	}
+
+	cmdName := os.Args[1]
+	cmdArgs := os.Args[2:]
+
+	err = cmds.run(programState, command{Name: cmdName, Args: cmdArgs})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
