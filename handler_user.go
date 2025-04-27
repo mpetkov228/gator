@@ -58,11 +58,29 @@ func handleRegister(s *state, cmd command) error {
 	return nil
 }
 
+func handleUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("error getting users: %v", err)
+	}
+
+	for _, user := range users {
+		if s.cfg.CurrentUserName == user.Name {
+			fmt.Printf("* %s (current)\n", user.Name)
+		} else {
+			fmt.Printf("* %s\n", user.Name)
+		}
+	}
+
+	return nil
+}
+
 func handleReset(s *state, cmd command) error {
 	err := s.db.DeleteUsers(context.Background())
 	if err != nil {
 		return fmt.Errorf("error deleting user data: %v", err)
 	}
+	fmt.Println("Database reset successfully!")
 	return nil
 }
 
