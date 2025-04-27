@@ -25,6 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("error connecting to db: %v", err)
 	}
+	defer db.Close()
 	dbQueries := database.New(db)
 
 	programState := &state{
@@ -37,6 +38,7 @@ func main() {
 	}
 	cmds.register("login", handleLogin)
 	cmds.register("register", handleRegister)
+	cmds.register("reset", handleReset)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")

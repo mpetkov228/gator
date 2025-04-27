@@ -23,10 +23,10 @@ func handleLogin(s *state, cmd command) error {
 
 	err = s.cfg.SetUser(user.Name)
 	if err != nil {
-		return fmt.Errorf("couldn't set current user: %w", err)
+		return fmt.Errorf("error setting user: %w", err)
 	}
 
-	fmt.Println("User logged in successfully!")
+	fmt.Println("user switched successfully!")
 	return nil
 }
 
@@ -49,9 +49,24 @@ func handleRegister(s *state, cmd command) error {
 		return fmt.Errorf("error creating user: %v", err)
 	}
 
-	s.cfg.SetUser(user.Name)
+	err = s.cfg.SetUser(user.Name)
+	if err != nil {
+		return fmt.Errorf("error setting user: %v", err)
+	}
 
-	fmt.Println("New user was created!")
-	fmt.Printf("%v\n", user)
+	printUser(user)
 	return nil
+}
+
+func handleReset(s *state, cmd command) error {
+	err := s.db.DeleteUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("error deleting user data: %v", err)
+	}
+	return nil
+}
+
+func printUser(user database.User) {
+	fmt.Printf(" * ID:      %v\n", user.ID)
+	fmt.Printf(" * Name:    %v\n", user.Name)
 }
