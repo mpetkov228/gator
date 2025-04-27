@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/mpetkov228/gator/internal/config"
 )
 
