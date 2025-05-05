@@ -39,3 +39,22 @@ func handleFollow(s *state, cmd command) error {
 
 	return nil
 }
+
+func handleFollowing(s *state, cmd command) error {
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("error getting user: %v", err)
+	}
+
+	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if err != nil {
+		return fmt.Errorf("error getting user follows: %v", err)
+	}
+
+	fmt.Printf("Feeds followed by %s:\n", user.Name)
+	for _, followed := range feedFollows {
+		fmt.Printf(" - %s\n", followed.FeedName)
+	}
+
+	return nil
+}
