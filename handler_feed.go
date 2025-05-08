@@ -9,14 +9,9 @@ import (
 	"github.com/mpetkov228/gator/internal/database"
 )
 
-func handleAddFeed(s *state, cmd command) error {
+func handleAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 2 {
 		return fmt.Errorf("usage: %s <name> <url>", cmd.Name)
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("no user logged in")
 	}
 
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{

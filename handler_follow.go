@@ -9,14 +9,9 @@ import (
 	"github.com/mpetkov228/gator/internal/database"
 )
 
-func handleFollow(s *state, cmd command) error {
+func handleFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("usage: %s <url>", cmd.Name)
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user: %v", err)
 	}
 
 	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.Args[0])
@@ -40,12 +35,7 @@ func handleFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handleFollowing(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user: %v", err)
-	}
-
+func handleFollowing(s *state, cmd command, user database.User) error {
 	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return fmt.Errorf("error getting user follows: %v", err)
